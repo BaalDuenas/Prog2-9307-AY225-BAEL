@@ -1,0 +1,66 @@
+import java.io.*;
+import java.util.*;
+
+public class LowPerformingProducts {
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+        File file;
+
+        // Loop to validate file input
+        while (true) {
+            System.out.print("Enter dataset file path: ");
+            String path = input.nextLine();
+            file = new File(path);
+
+            if (file.exists() && file.isFile()) {
+                break;  // Valid file, exit loop
+            } else {
+                System.out.println("Invalid file path. Please try again.");
+            }
+        }
+
+        // Read and process dataset
+        List<Product> products = new ArrayList<>();
+        double totalSales = 0;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            reader.readLine(); // Skip header
+
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length >= 8) {  // Ensure data integrity
+                    String title = data[1];
+                    double sales = Double.parseDouble(data[7]);
+                    products.add(new Product(title, sales));
+                    totalSales += sales;
+                }
+            }
+        } catch (IOException | NumberFormatException e) {
+            System.out.println("Error reading the file.");
+            e.printStackTrace();
+            return;
+        }
+
+        // Calculate average sales
+        double averageSales = totalSales / products.size();
+        System.out.println("Average Sales: " + averageSales);
+
+        // Display low-performing products
+        System.out.println("Low Performing Products:");
+        products.stream()
+                .filter(p -> p.sales < averageSales)
+                .forEach(p -> System.out.println("Product: " + p.title + ", Sales: " + p.sales));
+    }
+
+    // Product class to store product info
+    static class Product {
+        String title;
+        double sales;
+
+        Product(String title, double sales) {
+            this.title = title;
+            this.sales = sales;
+        }
+    }
+}

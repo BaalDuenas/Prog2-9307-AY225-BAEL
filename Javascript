@@ -1,0 +1,59 @@
+const fs = require('fs');
+const readline = require('readline');
+
+// Set up readline interface for user input
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+function askFilePath() {
+    rl.question("Enter dataset file path: ", (path) => {
+        if (fs.existsSync(path)) {
+            console.log("File found. Processing...");
+            processFile(path);
+        } else {
+            console.log("Invalid file path. Try again.");
+            askFilePath();
+        }
+    });
+}
+
+function processFile(path) {
+    try {
+        // Read the file and split it by lines
+        const data = fs.readFileSync(path, 'utf8').split('\n');
+        const products = [];
+        let totalSales = 0;
+
+        // Skip the header and process each line
+        data.slice(1).forEach(line => {
+            const fields = line.split(',');
+            if (fields.length >= 8) {  // Basic validation
+                const title = fields[1].trim();  // Product title
+                const sales = parseFloat(fields[7].trim());  // Sales value
+                if (!isNaN(sales)) {
+                    products.push({ title, sales });
+                    totalSales += sales;
+                }
+            }
+        });
+
+        // Calculate the average sales
+        const averageSales = totalSales / products.length;
+        console.log("Average Sales:", averageSales);
+
+        // Display low-performing products
+        console.log("Low Performing Products:");
+        products.filter(p => p.sales < averageSales).forEach(p => {
+            console.log(`Product: ${p.title}, Sales: ${p.sales}`);
+        });
+
+    } catch (e) {
+        console.error("Error reading the file:", e.message);
+    } finally {
+        rl.close();
+    }
+}
+
+askFilePath();
