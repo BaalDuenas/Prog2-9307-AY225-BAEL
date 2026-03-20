@@ -1,4 +1,4 @@
-public class SimpleDeterminant {
+public class Java {
 
     public static void main(String[] args) {
 
